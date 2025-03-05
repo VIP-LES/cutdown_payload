@@ -1,7 +1,7 @@
 
 #include <Wire.h>
 #include <Adafruit_MS8607.h>
-#include <Adafruit_Sensor.h>c
+#include <Adafruit_Sensor.h>
 
 #include "MS8607_Job.h"
 #include "UltimateGPS_Job.h"

@@ -1,5 +1,7 @@
 ## Steps to build
+
+
+__From project directory:__
 ```
-mkdir generated
-protoc -I=cutdown-packets/protobuf/ --cpp_out=generated cutdown-packets/protobuf/messages.proto
+python nanopb/generator/nanopb_generator.py cutdown-packets/messages.proto
 ```

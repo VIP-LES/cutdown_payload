@@ -2,6 +2,7 @@
 #define JOB_H
 
 #include <ctime>
+#include "generated/messages.pb.h"
 
 #define JOB_DEBUG(MESSAGE) \
     do { if (this->debug) Serial.println((MESSAGE)); } while (0)
