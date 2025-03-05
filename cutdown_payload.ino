@@ -1,32 +1,38 @@
 
 #include <Wire.h>
 #include <Adafruit_MS8607.h>
-#include <Adafruit_Sensor.h>
+#include <Adafruit_Sensor.h>c
 
-#include "DataDump.h"
-#include "MS8607_Module.h"
+#include "MS8607_Job.h"
+#include "UltimateGPS_Job.h"
 
 
-MS8607_Module baroSensor = MS8607_Module();
+MS8607_Job sensor_job = MS8607_Job();
+UltimateGPS_Job gps_job = UltimateGPS_Job();
+
 
 void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);
 
+  sensor_job.debug = true;
+  gps_job.debug = true;
   
-  enum Module::Outcome baroStatus = baroSensor.init();
-  if (baroStatus != Module::SUCCESS) {
-    Serial.println("-- FAILED TO INIT BAROMETRIC SENSOR --");
-  }
+  // Should check init status!!!
+  sensor_job.initialize();
+  gps_job.initialize();
   
 }
 
 void loop() {
-  struct GpsData gps;
-  sensors_event_t baroReadings;
-  
-  baroSensor.read(&baroReadings);
+  gps_job.poll();
 
-  delay(500);
+  if (sensor_job.ready()) {
+    sensor_job.execute();
+  }
+
+  if (gps_job.ready()) {
+    gps_job.execute();
+  }
 
 }
