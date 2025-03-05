@@ -2,7 +2,30 @@
 #define JOB_H
 
 #include <ctime>
-#include "generated/messages.pb.h"
+
+#define LOG_OUTCOME(name, outcome) \
+    Serial.print("["); \
+    Serial.print(millis()); \
+    Serial.print("]: "); \
+    Serial.print(name); \
+    Serial.print(" "); \
+    switch(outcome) { \
+        case Outcome::Success: \
+            Serial.println("succeeded"); \
+            break; \
+        case Outcome::Partial: \
+            Serial.println("partially succeeded"); \
+            break; \
+        case Outcome::Waiting: \
+            Serial.println("is waiting"); \
+            break; \
+        case Outcome::FailureRetry: \
+            Serial.println("failed temporarily"); \
+            break; \
+        case Outcome::FailurePermanent: \
+            Serial.println("failed permanently"); \
+            break; \
+    }
 
 #define JOB_DEBUG(MESSAGE) \
     do { if (this->debug) Serial.println((MESSAGE)); } while (0)
