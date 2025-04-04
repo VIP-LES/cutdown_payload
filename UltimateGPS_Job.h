@@ -36,10 +36,6 @@ public:
 
     void poll() override {
       char c = GPS.read();
-      if (this->debug && c != 0) {
-        Serial.print("GPS serial character: ");
-        Serial.println(c);
-      }
     }
 
     enum Outcome close() override {
@@ -119,4 +115,4 @@ public:
     }
 };
 
-#endif /* ULTIMATEGPS_MODULE_H */
+#endif /* ULTIMATEGPS_JOB_H */

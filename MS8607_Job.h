@@ -26,7 +26,6 @@ public:
             JOB_DEBUG("Failed to init MS8607 chip");
             return Outcome::FailureRetry;
         }
-        JOB_DEBUG("MS8607 Found!");
 
         ms8607.setPressureResolution(MS8607_PRESSURE_RESOLUTION_OSR_8192);
         
