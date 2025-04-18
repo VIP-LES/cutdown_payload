@@ -6,11 +6,19 @@
 #include <pb_encode.h>
 #include "messages.pb.h"
 
+/** 
+ * @brief Sends telemetry packet with current telemetry information.
+ * 
+ * @details If telemetry packet encoding fails, Outcome::FailureRetry
+ * is returned. Otherwise, the packet is sent and Outcome::Success is
+ * returned.
+ * 
+ * @return Outcome enum representing Success or FailureRetry
+ */
 enum Outcome Telemetry_Job::execute()
 {
     time_t now = millis();
     last_execution_time = now;
-
 
     messaging_BasePacket packet = messaging_BasePacket_init_zero;
     strncpy(packet.callsign, callsign, MAX_CALLSIGN_SIZE);
@@ -26,30 +34,20 @@ enum Outcome Telemetry_Job::execute()
 
     packet.which_packet_data = messaging_BasePacket_telemetry_packet_tag;
 
+    // Sets telemetry packet sensor values to current sensor readings
     SET_VALUE(packet.packet_data.telemetry_packet.temperature,sensor_job.temperature);
     SET_VALUE(packet.packet_data.telemetry_packet.pressure,sensor_job.pressure);
     SET_VALUE(packet.packet_data.telemetry_packet.humidity, sensor_job.humidity);
     SET_GPS_DATA(packet.packet_data.telemetry_packet.gps_data, gps_job.GPS);
 
+    // Sets telemetry packet relay values to current ones from cutdown job
     packet.packet_data.telemetry_packet.relay_1 = cutdown.r1;
     packet.packet_data.telemetry_packet.relay_2 = cutdown.r2;
     packet.packet_data.telemetry_packet.relay_3 = cutdown.r3;
     packet.packet_data.telemetry_packet.relay_4 = cutdown.r4;
-    bool motor_state;
-    switch (cutdown.motor) {
-        case MotorState::Forward:
-            motor_state = true;
-            break;
-        case MotorState::Reverse:
-            motor_state = true;
-            break;
-        case MotorState::Off:
-            motor_state = false;
-            break;
-        default:
-            motor_state = true;
-            break;
-    };
+
+    bool motor_state = (cutdown.motor != MotorState::Off);
+
     packet.packet_data.telemetry_packet.motor = motor_state;
 
     datalog.log(
@@ -74,6 +72,4 @@ enum Outcome Telemetry_Job::execute()
         JOB_DEBUG("Failed to encode and send packet in Telemetry Job");
         return Outcome::FailureRetry;
     }
-
-    return Outcome::Success;
 }

@@ -7,7 +7,12 @@
 #include "Job.h"
 
 #define MS8607_READ_INTERVAL 1000
-
+/**
+ * @class MS8607_Job
+ * @brief Defines initialization, destruction, and functionality
+ * upon collecting environmental data of the MS8607 environmental
+ * sensor onboard.
+ */
 class MS8607_Job: public Job {
 public:
     MS8607_Job() :
@@ -21,6 +26,13 @@ public:
     float pressure;
     float humidity;
 
+    /**
+     * @brief Initializes MS8607 chip
+     * 
+     * @return Outcome::Success if successful, Outcome::FailureRetry
+     * if not, Outcome::Partial if at least one get sensor call has
+     * returned a null pointer
+     */
     enum Outcome initialize() override {
         if (!ms8607.begin()) {
             JOB_DEBUG("Failed to init MS8607 chip");
@@ -41,11 +53,24 @@ public:
         return Outcome::Success;
     }
 
+    /**
+     * TODO!!
+     */
     enum Outcome close() override {
-      // TODO
       return Outcome::FailurePermanent;
     }
 
+    /**
+     * @brief Sets instance variables to most recent readings from the
+     * environmental chip, if the pointers to the sensors on the chip
+     * exist
+     * 
+     * @details For each sensor, if the pointer is null or the sensor fails
+     * to get data for this call, the associated instance variable is set
+     * to -1 and partial failure is set to true
+     * 
+     * @return Outcome::Success if no partial failures, else Outcome::Partial
+     */
     enum Outcome execute() override {
       time_t now = millis();
 

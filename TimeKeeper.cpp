@@ -2,6 +2,16 @@
 #include "time.h"
 #include "TimeKeeper.h"
 
+/**
+ * @brief Gets time: GPS time if possible, else relative time
+ * 
+ * @details Writes to an address pointed to by the provided pointer,
+ * rather than returning the time itself. Instead, will return an 
+ * enum indicating the type of time returned (gps or relative).
+ * 
+ * @param time pointer to where the value will be stored
+ * @return TimeFormat enum (TIME_GPS or TIME_RELATIVE)
+ */
 enum TimeFormat get_time(uint64_t* time) {
     if (gps_job.GPS.fix) {
         uint16_t year  = gps_job.GPS.year + 2000;

@@ -10,7 +10,11 @@
 #define SCRATCH_SIZE RH_RF95_MAX_MESSAGE_LEN // bytes
 #define UNUSED_TIMEOUT 1000 // ms
 
-
+/**
+ * @class RFM9x_Job
+ * @brief Defines initialization, destruction, and functionality
+ * upon receiving command packet of the RFM9x onboard the payload
+ */
 class RFM9x_Job: public Job {
   public:
     RH_RF95 rfm95;
@@ -18,11 +22,19 @@ class RFM9x_Job: public Job {
     // Just what the example said; Hardcoded Pins for Adafruit Feather.
     RFM9x_Job() : rfm95(8, 3), Job(UNUSED_TIMEOUT) {}
 
+    /**
+     * @brief Initializes RFM9x and gives it power
+     * 
+     * @details Tx power is set to 20 because this is 
+     * ostensibly the maximum power
+     * 
+     * @return Outcome enum that indicates success or PERMANENT failure
+     * (if initialization fails, it is unlikely to be able to be fixed)
+     */
     enum Outcome initialize() override {
         if (!rfm95.init()) {
           JOB_DEBUG("RFM9x Initialization Failed!");
-          return Outcome::FailurePermanent; // Permanent because this chip is onboard
-                                            // And I don't think failure will be fixable.
+          return Outcome::FailurePermanent;
         }
 
         rfm95.setTxPower(20, false);
@@ -30,15 +42,33 @@ class RFM9x_Job: public Job {
         return Outcome::Success;
     }
 
+    /**
+     * @brief Indicates if the radio has received data
+     * and that it is ready to be read
+     */
     bool ready() override {
       return rfm95.available();
     }
 
+    /**
+     * TODO!!
+     */
     enum Outcome close() override {
-      //TODO
       return Outcome::FailurePermanent;
     }
 
+    /**
+     * @brief Receives, decodes, and executes command packet
+     * 
+     * @details If message has not been received, Outcome::Waiting enum
+     * returned. If decoding fails, Outcome::FailureRetry enum returned.
+     * If decoding succeeds, confirms packet is a command and then
+     * executes the command. If not a command packet, Outcome::Partial
+     * returned (not our fault, just an unexpected packet type was
+     * received).
+     * 
+     * @return see details
+     */
     enum Outcome execute() override {
       time_t now = millis();
       static uint8_t packet_scratch_buffer[SCRATCH_SIZE];
@@ -53,6 +83,7 @@ class RFM9x_Job: public Job {
       // packet.packet_data.command_packet.command_data.string_data.funcs.decode = NULL;
       if (!pb_decode(&stream, messaging_BasePacket_fields, &packet)) {
         JOB_DEBUG("Failed to decode a packet, ignoring!");
+        return Outcome::FailureRetry;
       }
 
     Serial.print("Length received: _");
@@ -67,9 +98,10 @@ class RFM9x_Job: public Job {
           break;
         case messaging_BasePacket_telemetry_packet_tag:
           JOB_DEBUG("We received telemetry, weird! Ignoring...");
-          break;
+          return Outcome::Partial;
         default:
           JOB_DEBUG("Unknown packet type. Ignoring...");
+          return Outcome::Partial;
       };
 
       last_execution_time = now;
