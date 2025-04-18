@@ -1,6 +1,7 @@
 #ifndef JOB_H
 #define JOB_H
 
+#include <Arduino.h>
 #include <ctime>
 
 #define LOG_OUTCOME(name, outcome) \
@@ -64,5 +65,7 @@ protected:
     time_t interval;  // Interval in seconds
     time_t last_execution_time;
 };
+
+
 
 #endif /* JOB_H */

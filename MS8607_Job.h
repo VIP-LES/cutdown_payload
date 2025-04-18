@@ -1,5 +1,5 @@
-#ifndef MS8607_MODULE_H
-#define MS8607_MODULE_H
+#ifndef MS8607_JOB_H
+#define MS8607_JOB_H
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_MS8607.h>

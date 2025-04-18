@@ -9,6 +9,6 @@ enum TimeFormat {
     TIME_EXTERNAL
 };
 
-enum TimeFormat get_time(time_t * time);
+enum TimeFormat get_time(uint64_t * time);
 
 #endif /* TIMEKEEPER_H */

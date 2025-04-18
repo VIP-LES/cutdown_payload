@@ -1,0 +1,93 @@
+syntax = "proto3";  // Define version
+
+package messaging;
+
+
+// Enum to define the bitflags for BasePacket
+enum PacketFlags {
+    NONE = 0;            // No flags set
+    RELATIVE_TIME = 1;   // Indicates the timestamp is relative to the board time
+    TEST_PACKET = 2;     // Set if the packet is using testing data and is not in production mode.
+}
+
+// Enum to define command types for CommandPacket
+enum Command {
+    SET_NICHROME = 0;
+    SET_MOTOR = 1;
+    ADJUST_TRANSMIT_POWER = 2;
+    CUTDOWN_PARACHUTE = 3;
+    CUTDOWN_BALLOON = 4;
+    PSEUDO_NUM_COMMANDS = 5;
+    // more here
+}
+
+
+// Define the base packet
+message BasePacket {
+    string callsign = 1;  // Fixed callsign (9 characters max)
+    uint64 timestamp = 2;  // Timestamp, e.g., Unix time (int64)
+    PacketFlags flags = 3;     // Uses PacketFlag enum to represent bitflags
+    uint32 nonce_id = 4;  // Nonce ID (idempotency/logging), now uint32
+
+    // Inner packet can vary based on packet type
+    oneof packet_data {
+        TelemetryPacket telemetry_packet = 5;
+        CommandPacket command_packet = 6;
+        AckPacket ack_packet = 7;
+        // Other packet types can go here (e.g. ExecutedPacket)
+    }
+}
+
+// Define telemetry data (inner packet for telemetry)
+message TelemetryPacket {
+    // Temperature (as scaled int32 to represent 6 decimal places)
+    int32 temperature = 1;  // 22.123456 * 1,000,000 = 22123456
+
+    // Humidity (scaled int32)
+    int32 humidity = 2;     // 55.234567 * 1,000,000 = 55234567
+
+    // Pressure (scaled int32)
+    int32 pressure = 3;     // 1013.25 * 1,000,000 = 1013250000
+
+    // GPS data. Not always present because the GPS takes time to fix.
+    optional GPSData gps_data = 4;
+
+    bool relay_1 = 5;
+    bool relay_2 = 6;
+    bool relay_3 = 7;
+    bool relay_4 = 8;
+    bool motor = 9;
+}
+
+message CommandPacket {
+    Command command = 1;
+
+    oneof command_data {
+        bool boolean_data = 2;
+        // string string_data = 3;
+        uint32 int_data = 4;
+    }
+}
+
+message AckPacket {
+    Command command = 1;
+    uint32 your_nonce = 2;
+}
+
+// GPS data message
+message GPSData {
+    // Latitude (scaled to int32 with 6 decimal places)
+    int32 latitude = 1;     // 37.7749 * 1,000,000 = 37774900
+
+    // Longitude (scaled to int32 with 6 decimal places)
+    int32 longitude = 2;    // -122.4194 * 1,000,000 = -122419400
+
+    // Altitude (scaled to int32 with 6 decimal places)
+    int32 altitude = 3;     // 30.5 * 1,000,000 = 30500000
+
+    // GPS fix quality
+    uint32 fix_quality = 4;
+
+    // Number of satellites
+    uint32 num_satellites = 5;
+}
